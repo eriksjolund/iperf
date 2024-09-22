@@ -67,6 +67,9 @@
 #undef HAVE_SCTP_H
 
 /* Define to 1 if you have the 'sendfile' function. */
+/* Have sd-daemon support. */
+#undef HAVE_SD_DAEMON_H
+
 #undef HAVE_SENDFILE
 
 /* Define to 1 if you have the 'SetProcessAffinityMask' function. */

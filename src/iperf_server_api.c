@@ -108,11 +108,25 @@ iperf_server_worker_run(void *s) {
   cleanup_and_fail:
     return NULL;
 }
+#if defined(HAVE_SD_DAEMON_H)
+#include <systemd/sd-daemon.h>
+#endif
 
 int
 iperf_server_listen(struct iperf_test *test)
 {
+    int n = 0;
     retry:
+    #if defined(HAVE_SD_DAEMON_H)
+    n = sd_listen_fds(0);
+    if (n > 1) {
+            return -1;
+    }
+    if (n == 1) {
+            test->listener = SD_LISTEN_FDS_START + 0;
+    }
+    #endif
+    if (n == 0) {
     if((test->listener = netannounce(test->settings->domain, Ptcp, test->bind_address, test->bind_dev, test->server_port)) < 0) {
 	if (errno == EAFNOSUPPORT && (test->settings->domain == AF_INET6 || test->settings->domain == AF_UNSPEC)) {
 	    /* If we get "Address family not supported by protocol", that
@@ -127,6 +141,7 @@ iperf_server_listen(struct iperf_test *test)
 	    i_errno = IELISTEN;
 	    return -1;
 	}
+    }
     }
 
     if (!test->json_output) {
